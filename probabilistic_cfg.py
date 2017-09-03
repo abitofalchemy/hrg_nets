@@ -2,7 +2,9 @@ import collections
 
 import networkx as nx
 import numpy as np
+from multiprocessing import Process
 
+dbg = True
 
 class Rule(object):
     def __init__(self, id, lhs, rhs, prob, translate=True):
@@ -22,7 +24,7 @@ class Rule(object):
         n_symb = []
         for r in rhs:
             if r.endswith(":N"):
-                size = [chr(ord('a') + x) for x in range(0, r.count(",") + 1)]
+                size = [unichr(ord('a') + x) for x in range(0, r.count(",") + 1)]
                 str = ",".join(size)
                 n_symb.append(str)
             else:
@@ -45,6 +47,10 @@ class Grammar(object):
         self.by_lhs.setdefault(rule.lhs, []).append(rule)
         self.by_id.setdefault(rule.id, []).append(rule)
 
+    def alpha_topological_givenrule(self,alpha, lhs_i, size, rule, p ):
+      with np.errstate(invalid='ignore'):
+        alpha[lhs_i, size] = np.logaddexp(alpha[lhs_i, size], np.log(rule.prob) + p)
+
     def set_max_size(g, max_size):
         unary_graph = nx.DiGraph()
         for x in g.nonterminals:
@@ -53,7 +59,7 @@ class Grammar(object):
             for rule in rules:
                 if len(rule.cfg_rhs) == 1 and rule.cfg_rhs[0] in g.nonterminals:
                     unary_graph.add_edge(rule.lhs, rule.cfg_rhs[0], weight=rule.prob)
-
+        if dbg: print ("  unary_graph")
         try:
             topological = nx.topological_sort(nx.DiGraph(unary_graph), reverse=True)
             unary_matrix = None
@@ -67,19 +73,25 @@ class Grammar(object):
             except np.linalg.LinAlgError as e:
                 raise np.linalg.LinAlgError(e.message + " (cycle of unary rules with weight >= 1)")
 
+        if dbg: print ("  topological and unary matrix")
         nt_to_index = {x: i for i, x in enumerate(topological)}
 
         alpha = np.empty((len(topological), max_size + 1))
         alpha.fill(-np.inf)
+        if dbg: print ("  alpha matrix initialized and filled with -np.inf")
+
         for size in range(1, max_size + 1):
             if size%100 == 0:
-                print #size
+                print str(size)+",",
+            elif size%100 == 0:
+              print "\n"
+
             for lhs_i, lhs in enumerate(topological):
                 for rule in g.by_lhs[lhs]:
-                    if unary_matrix is not None:
+                    if unary_matrix is not None and len(rule.cfg_rhs) == 1:
+                      if rule.cfg_rhs[0] in g.nonterminals:
                         # we'll do unary rules later
-                        if len(rule.cfg_rhs) == 1 and rule.cfg_rhs[0] in g.nonterminals:
-                            continue
+                        continue
 
                     nts = [nt_to_index[x] for x in rule.cfg_rhs if x in g.nonterminals]
                     n = size - (len(rule.cfg_rhs) - len(nts))  # total size available for nonterminals
@@ -88,10 +100,8 @@ class Grammar(object):
                         if n != 0:
                             continue
                         p = 0.
-
                     elif len(nts) == 1:
                         p = alpha[nts[0], n]
-
                     elif len(nts) == 2:
                         if n < 2:
                             continue
@@ -107,8 +117,11 @@ class Grammar(object):
                     else:
                         raise ValueError("more than two nonterminals in rhs")
 
+                    # multiprocess
+										# Process(target=g.alpha_topological_givenrule, args=(alpha, lhs_i, size, rule, p,)).start()
                     with np.errstate(invalid='ignore'):
-                        alpha[lhs_i, size] = np.logaddexp(alpha[lhs_i, size], np.log(rule.prob) + p)
+                      alpha[lhs_i, size] = np.logaddexp(alpha[lhs_i, size], np.log(rule.prob) + p)
+
             # Apply unary rules
             # If we weren't in log-space, this would be:
             # alpha[:,size] = unary_matrix * alpha[:,size]

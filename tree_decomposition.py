@@ -271,7 +271,16 @@ def add_to_prod_rules(production_rules, lhs, rhs, s):
 				rhs_s.add_edge(u,v)
 
 
-		lhs_str = "(" + ",".join(str(x) for x in sorted(lhs_s)) + ")"
+
+		try:
+			lhs_str = "(" + ",".join(unicode(x.decode('utf8')) for x in sorted(lhs_s)) + ")"
+		except Exception, e:
+			print str(e)
+			print [type(x) for x in sorted(lhs_s)]
+			print lhs_s
+			print "(" + ",".join(str(x).encode('utf-8') for x in sorted(lhs_s)) + ")"
+
+
 
 		nodes = set()
 		rhs_term_dict = []
