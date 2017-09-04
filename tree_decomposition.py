@@ -4,6 +4,10 @@ from collections import defaultdict
 import itertools
 import networkx as nx
 import traceback
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 
 def make_clique(graph, nodes):
 		for v1 in nodes:
