@@ -268,22 +268,6 @@ Gtst = nx.read_edgelist(fn_test, comments="%", data=(('ts',int),))
 # Gtst = nx.read_edgelist(fn_test)
 Gtst.name = [x for x in edgelists[0].split('.') if len(x)>3][0]
 
-chunglu_GM = []
-kronprd_GM = []
-
-# --<
-# --< chung lu graph >--
-# --<
-z = Gtrain.degree().values()
-for i in range(0,50):
-    cl_graph = nx.expected_degree_graph(z)
-    chunglu_GM.append(cl_graph)
-# --<
-# --< Kronecker product graph >--
-# --<
-for i in range(0,50):
-    kp_graph = kronfit(Gtrain)
-    kronprd_GM.append(kp_graph)
 
 # --< metrics
 metricx = ['gcd']

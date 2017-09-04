@@ -126,7 +126,7 @@ def kronfit(G):
 		args = ("time/bin/linux/kronfit", "-i:{}".format(tsvGraphName),
 				"-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
 	elif environ['HOME'] == '/Users/saguinag':
-		args = ("time/bin/mac/kronfit", "-i:{}".format(tsvGraphName),
+		args = ("time/bin/macos/kronfit", "-i:{}".format(tsvGraphName),
 				"-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
 	else:
 		args = ('./kronfit.exe -i:tmp.txt -n0:2 -m:"0.9 0.6; 0.6 0.1" -gi:5')
