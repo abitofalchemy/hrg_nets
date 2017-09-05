@@ -8,7 +8,6 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-
 def make_clique(graph, nodes):
 		for v1 in nodes:
 				for v2 in nodes:

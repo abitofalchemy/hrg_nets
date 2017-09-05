@@ -287,7 +287,7 @@ def grow_graphs_using_krongen(graph, gn, recurrence_nbr=1, graph_vis_bool=False,
 		args = ("time/bin/linux/krongen", "-o:"+tsvGraphName, M, "-i:{}".format(k))
 	elif environ['HOME'] == '/Users/saguinag':
 		print tsvGraphName
-		args = ("time/bin/mac/krongen", "-o:"+tsvGraphName, M, "-i:{}".format(k))
+		args = ("bin/macos/krongen", "-o:"+tsvGraphName, M, "-i:{}".format(k))
 	else:
 		args = ('./krongen.exe -o:{} '.format(tsvGraphName) +M +'-i:{}'.format(k+1))
 	for i in range(nbr_runs):
