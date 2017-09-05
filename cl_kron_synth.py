@@ -113,7 +113,7 @@ def kronfit(G):
           tmp.write(str(e[0]) + ' ' + str(e[1]) + '\n')
 
   if environ['HOME'] == '/home/saguinag':
-	  args = ("/home/saguinag/Software/Snap-3.0/examples/kronfit/kronfit", "-i:tmp.txt","-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
+	  args = ("bin/unix/kronfit", "-i:tmp.txt","-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
   elif environ['HOME'] == '/Users/saguinag':
 	  args = ("bin/macos/kronfit", "-i:tmp.txt","-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
   else:
