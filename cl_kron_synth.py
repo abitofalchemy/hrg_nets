@@ -113,7 +113,7 @@ def kronfit(G):
           tmp.write(str(e[0]) + ' ' + str(e[1]) + '\n')
 
   if environ['HOME'] == '/home/saguinag':
-	  args = ("bin/unix/kronfit", "-i:tmp.txt","-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
+	  args = ("bin/linux/kronfit", "-i:tmp.txt","-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
   elif environ['HOME'] == '/Users/saguinag':
 	  args = ("bin/macos/kronfit", "-i:tmp.txt","-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
   else:
@@ -210,14 +210,15 @@ def main(args):
 	for i in range(0,50):
 		chunglu_GM.append(nx.expected_degree_graph(z))
 	print "==> chunglu_GM took: {} seconds".format(time.time() - t_start)
+	print len(chunglu_GM), type(chunglu_GM)
+	with open(r"Results/{}_clgms.pickle".format(g_name), "wb") as output_file:
+		cPickle.dump(chunglu_GM, output_file)
+	if os.path.exists(r"Results/{}_clgms.pickle".format(g_name)): print "File saved"
 
 	# --<
 	# --< Kronecker product graph >--
 	# --<
 	t_start = time.time()
-	all_proc = []
-	
-	
 	[get_kron_synthgraphs (G,kronprd_GM) for i in range(0,50)]
 #	for i in range(50):
 #		Process(target=get_kron_synthgraphs, args=(G,kronprd_GM)).start()
@@ -228,10 +229,6 @@ def main(args):
 #	print len(p)
 	print "Using: get_kron_synthgraphs:  %s seconds" % (time.time()-t_start)
 	print len(kronprd_GM), type(kronprd_GM)
-	print len(chunglu_GM), type(chunglu_GM)
-	with open(r"Results/{}_clgms.pickle".format(g_name), "wb") as output_file:
-		cPickle.dump(chunglu_GM, output_file)
-	if os.path.exists(r"Results/{}_clgms.pickle".format(g_name)): print "File saved"
 	with open(r"Results/{}_kpgms.pickle".format(g_name), "wb") as output_file:
 		cPickle.dump(kronprd_GM, output_file)
 	if os.path.exists(r"Results/{}_kpgms.pickle".format(g_name)): print "File saved"

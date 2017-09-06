@@ -144,3 +144,4 @@ Date    | Notes
 01Sep17 | working on exact hrg to save graphs
 03Sep17 | set max loops taking a long time!
 05Sep17 | got cl_kron_synth.py working to gen pickle files to be used with pgd
+05Sep17 | todo: summarize the macro files for synth graphs
