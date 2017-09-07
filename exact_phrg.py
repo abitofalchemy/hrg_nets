@@ -29,30 +29,15 @@ DBG = False
 
 # ~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~100
 def get_parser ():
-<<<<<<< HEAD
-  parser = argparse.ArgumentParser(description='Infer a model given a graph (derive a model)')
-  parser.add_argument('--orig', required=True, nargs=1, help='Filename of edgelist graph')
-  parser.add_argument('--chunglu', help='Generate chunglu graphs', action='store_true')
-  parser.add_argument('--kron', help='Generate Kronecker product graphs', action='store_true')
-  parser.add_argument('--samp', help='Sample sg>dur>gg2targetN', action='store_true')
-  parser.add_argument('-tw', action='store_true', default=0, required=0, help="print xphrg mcs tw")
-  parser.add_argument('--nstats', action='store_true', default=0, required=0, help="Compute stats?")
-  parser.add_argument('-prs', action='store_true', default=0, required=0, help="stop at prs")
-  parser.add_argument('--version', action='version', version=__version__)
-=======
 	parser = argparse.ArgumentParser(description='Infer a model given a graph (derive a model)')
 	parser.add_argument('--orig', required=True, nargs=1, help='Filename of edgelist graph')
 	parser.add_argument('--chunglu', help='Generate chunglu graphs', action='store_true')
 	parser.add_argument('--kron', help='Generate Kronecker product graphs', action='store_true')
 	parser.add_argument('--samp', help='Sample sg>dur>gg2targetN', action='store_true')
-	parser.add_argument('-tw', action='store_true', default=False, required=False,
-											help="print xphrg mcs tw")
+	parser.add_argument('-tw', action='store_true', default=0, required=0, help="print xphrg mcs tw")
 	parser.add_argument('--nstats', action='store_true', default=0, required=0, help="Compute stats?")
-	parser.add_argument('-prs', action='store_true', default=False, required=False,
-											help="stop at prs")
+	parser.add_argument('-prs', action='store_true', default=0, required=0, help="stop at prs")
 	parser.add_argument('--version', action='version', version=__version__)
->>>>>>> 1bc1dc05c0195086ab65b43eb0098046760ad98f
-
 	return parser
 
 

@@ -21,9 +21,12 @@ sys.setdefaultencoding('utf-8')
 import networkx as nx
 import pandas as pd
 import pprint as pp
-from pami import graph_name
+import multiprocessing as mp
+
 from multiprocessing import Process
 from glob import glob
+
+results = []
 
 def get_parser ():
 	parser = argparse.ArgumentParser(description='Pami compute the metrics HRG, PHRG, ' +\
@@ -39,7 +42,7 @@ def get_parser ():
 def run_pgd_on_edgelist(fname,graph_name):
 	import platform
 	if platform.system() == "Linux":
-		args = ("bin/linux/pgd", "-f",  "{}".format(fname), "--macro", "Results_Graphlets/{}_{}.macro".format(graph_name, \
+		args = ("bin/linux/pgd", "-f",	"{}".format(fname), "--macro", "Results_Graphlets/{}_{}.macro".format(graph_name, \
 			os.path.basename(fname)))
 		print args
 	else:
@@ -69,7 +72,8 @@ def hstar_nxto_tsv(G,gname, ix):
 	
 
 def graphlet_stats(args):
-	gname = graph_name(args['orig'][0])
+	from vador.graph_name import graph_name
+	gname = vador.graph_name(args['orig'][0])
 	print "==>", gname
 	rows_2keep =["total_3_tris",
 				 "total_2_star",
@@ -87,7 +91,6 @@ def graphlet_stats(args):
 	for j,f in enumerate(files):
 		df = pd.read_csv(f, delimiter=r" ", header=None)
 		df.columns=['a','b','c']
-		df['c'] = df['c'].astype('float32')
 		df = df.drop('b', axis=1)
 		local_df = []
 		for r in rows_2keep:
@@ -97,8 +100,8 @@ def graphlet_stats(args):
 
 		if j == 0:	mdf = local_df
 		mdf = mdf.merge(local_df, on='a')
+		
 	df = pd.DataFrame(list(mdf['a'].values))
-	mdf = mdf.drop('a', 1)
 	
 	df['mu'] = mdf.apply(lambda x: x[1:].mean(), axis=1)
 	df['st'] = mdf.apply(lambda x: x[1:].std(), axis=1)
@@ -108,33 +111,41 @@ def graphlet_stats(args):
 
 	return
 
+def collect_results(result):
+	results.extend(result)
 
 def main(args):
+	from vador.graph_name import graph_name
+
 	if not args['orig']: return 
-	print "==>", args['orig'][0]
 	if args['stats']:
 		graphlet_stats(args)
 		exit()
-	
-	with open(args['orig'][0], "rb") as f:
-		c = cPickle.load(f)
-	print "==> [1]"
-	gname = graph_name(args['orig'][0])
-	print "==>", type(c), len(c), gname
-	if isinstance(c, dict):
-		if len(c.keys()) == 1:
-			c = c.values()[0]
-		else:
-			print c.keys()
+	else:
+		print ("File: %s" % args['orig'][0])
+		with open(args['orig'][0], "rb") as f:
+			c = cPickle.load(f)
+		print "	==> loaded the pickle file"
+		gname = graph_name(args['orig'][0])
+		print "	==>", type(c), len(c), gname
+		if isinstance(c, dict):
+			if len(c.keys()) == 1:
+				c = c.values()[0]
+			else:
+				print c.keys()
 
-	## -- 
-	for j,gnx in enumerate(c):
-		if isinstance (gnx, list):
-			gnx = gnx[0]
-		Process(target=hstar_nxto_tsv, args=(gnx,gname,j, )).start()
+		## --
+		p = mp.Pool(processes=20)
+		for j,gnx in enumerate(c):
+			if isinstance (gnx, list):
+				gnx = gnx[0]
+			#Process(target=hstar_nxto_tsv, args=(gnx,gname,j, )).start()
+			p.apply_async(hstar_nxto_tsv, args=(gnx,gname,j,), callback=collect_results)
+		p.close()
+		p.join()
+		print(results)
 
-
-	return 
+	return
 
 
 if __name__ == '__main__':

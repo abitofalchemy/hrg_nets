@@ -145,3 +145,4 @@ Date    | Notes
 03Sep17 | set max loops taking a long time!
 05Sep17 | got cl_kron_synth.py working to gen pickle files to be used with pgd
 05Sep17 | todo: summarize the macro files for synth graphs
+07Sep17 | `5546444797 Sep 5 10:18 Results/amazon0312_clgms.pickle, 644108189 Sep 6 09:29 Results/amazon0312_hstars.pickle`
