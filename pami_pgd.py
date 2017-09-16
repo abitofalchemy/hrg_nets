@@ -14,6 +14,8 @@ import subprocess
 import traceback
 import argparse
 import os
+from collections import Counter
+from random import sample
 
 import sys
 reload(sys)
@@ -54,7 +56,40 @@ def run_pgd_on_edgelist(fname,graph_name):
 	print "[o]"
 	return 
 
- 
+def hops(all_succs, start, level=0, debug=False):
+    if debug: print("level:", level)
+
+    succs = all_succs[start] if start in all_succs else []
+    if debug: print("succs:", succs)
+
+    lensuccs = len(succs)
+    if debug: print("lensuccs:", lensuccs)
+    if debug: print()
+    if not succs:
+        yield level, 0
+    else:
+        yield level, lensuccs
+
+    for succ in succs:
+        # print("succ:", succ)
+        for h in hops(all_succs, succ, level + 1):
+            yield h
+
+def get_graph_hops(graph, num_samples):
+    c = Counter()
+    for i in range(0, num_samples):
+        node = sample(graph.nodes(), 1)[0]
+        b = nx.bfs_successors(graph, node)
+
+        for l, h in hops(b, node):
+            c[l] += h
+
+    hopper = Counter()
+    for l in c:
+        hopper[l] = float(c[l]) / float(num_samples)
+    print hopper
+    return hopper
+
 def hstar_nxto_tsv(G,gname, ix):
 	import tempfile
 	with tempfile.NamedTemporaryFile(dir='/tmp', delete=False) as tmpfile:
@@ -131,7 +166,7 @@ def main(args):
 	for j,gnx in enumerate(c):
 		if isinstance (gnx, list):
 			gnx = gnx[0]
-		Process(target=hstar_nxto_tsv, args=(gnx,gname,j, )).start()
+		Process(target=get_graph_hops, args=(gnx,100, )).start()
 
 
 	return 

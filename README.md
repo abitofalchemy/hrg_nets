@@ -146,3 +146,7 @@ Date    | Notes
 05Sep17 | got cl_kron_synth.py working to gen pickle files to be used with pgd
 05Sep17 | todo: summarize the macro files for synth graphs
 07Sep17 | `5546444797 Sep 5 10:18 Results/amazon0312_clgms.pickle, 644108189 Sep 6 09:29 Results/amazon0312_hstars.pickle`
+15Sep17 | todo: add a ret_val and return overall
+15Sep17 | todo: in net_metrics
+15Sep17 | fast exact phrg and net metrics can do faster clust
+16Sep17 | got fast exact phrg working

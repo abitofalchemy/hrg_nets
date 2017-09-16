@@ -25,6 +25,7 @@ import pprint as pp
 import argparse, traceback
 import graph_sampler as gs
 from multiprocessing import Process
+from vador.graph_name import graph_name
 import multiprocessing as mp
 import load_edgelist_from_dataframe as tdf
 
@@ -45,7 +46,8 @@ def get_parser ():
 	return parser
 
 def collect_results(result):
-	results.extend(result)
+	#results.extend(result)
+	results.append(result)
 
 
 def Hstar_Graphs_Control (G, graph_name, axs=None):
@@ -440,18 +442,20 @@ def compute_net_stats_on_read_hrg_pickle(orig_df, gn,metricx):
 
 	# metrics.network_properties([orig], metricx, c, name=gn, out_tsv=False)
 	## --
-	p = mp.Pool(processes=10)
+	print 'mp.pool'
+	p = mp.Pool(processes=20)
 	for j,gnx in enumerate(c):
 		if isinstance (gnx, list):
 			gnx = gnx[0]
-		p.apply_async(metrics.network_properties, args=([orig], ['clust'], gnx, gn, True, ), callback=collect_results)
+		p.apply_async(metrics.network_properties, args=([orig], ['clust'], gnx, gn, ), callback=collect_results)
+		print ("p.apply_async(...")
 	p.close()
 	p.join()
 	print (results)
 
 def compute_net_statistics_on(orig_df, gn): # gn = graph name
 	if gn is "" : return
-	print "%"*4, gn, "%"*4
+	print "%"*4, gn,"| compute nstats",  "%"*4
 	hrg_pickle_exists = os.path.exists("Results/{}_hstars.pickle".format(gn))
 	if hrg_pickle_exists:
 		metricx = ['clust']
@@ -460,41 +464,77 @@ def compute_net_statistics_on(orig_df, gn): # gn = graph name
 		print 'To gen the hrg pickle:', gn
 		exit()
 
+def main_network_stats(args):
+	if os.path.exists("datasets/{}.pickle".format(gname)):
+    print (" ==>","reading from pickle")
+    orig_pickle = "datasets/{}.pickle".format(gname)
+    with open(orig_pickle, "rb") as in_file:
+      G= cPickle.load(in_file)
+  else:
+    import vador.datasets_graphs_edgelist as sal
+    print (" ==>","reading from edgelist")
+    G = sal.load_edgelist(args['orig'][0])
+    G.name = gname
+    nx.write_gpickle(G, "datasets/{}.pickle".format(gname))
+
+  from vador.datasets_graphs_edgelist import load_graphs_nxobjects
+  hrg_p_fname = "Results/{}_hstars.pickle".format(gname)
+  graphs_d = load_graphs_nxobjects(hrg_p_fname)
+  graphs_lst = graphs_d.values()[0]
+
+  p = mp.Pool(processes=10)
+  for g in graphs_lst:
+    # p.apply_async(metrics.network_properties, args=([G], ['clust'], g, gname,True, ), callback=collect_results)
+    p.apply_async(metrics.clustering_coefficients_single, args=(g, ), callback=collect_results)
+  p.close()
+  p.join()
+
+  print ("done with metrics")
+  for j,x in enumerate(results):
+    if j==0:
+      df = x
+      continue
+    df = pd.concat([df,x])
+    if 0: print j, "shape", df.shape
+
+  gb =df.groupby(['k'])
+  print (gb['cc'].mean().to_string())
+  print "-"*10
+  orig__clust_coef = metrics.clustering_coefficients_single(G)
+  gb = orig__clust_coef.groupby(['k'])
+  print (gb['cc'].mean().to_string())
+  #synth_clust_coef = results
 
 if __name__ == '__main__':
 	parser = get_parser()
 	args = vars(parser.parse_args())
 
-	# load orig file into DF and get the dataset name into g_name
-	datframes = tdf.Pandas_DataFrame_From_Edgelist(args['orig'])
-	df = datframes[0]
-	g_name = [x for x in os.path.basename(args['orig'][0]).split('.') if len(x) > 3][0]
-
-	if args['chunglu']:
+	gname = graph_name(args['orig'][0])
+	if args['nstats']:
+		main_network_stats(args)
+		exit()
+	elif args['chunglu']:
 		print 'Generate chunglu graphs given an edgelist'
 		sys.exit(0)
 	elif args['kron']:
 		print 'Generate chunglu graphs given an edgelist'
 		sys.exit(0)
-	elif (args['nstats']):
-		compute_net_statistics_on(df, g_name)
-		exit()
-
-	elif args['samp']:
-		print 'Sample K subgraphs of n nodes'
-		K = 500
-		n = 25
-		get_hrg_production_rules(df, g_name, n_subg=K, n_nodes=n)
-	else:
-		try:
-			if os.path.exists("Results/{}_hstars.pickle".format(g_name)): 
-				print "picle_file already exists"
-				os._exit(1)
-			else:
-				get_hrg_production_rules(df, g_name, args['tw'], nstats=args['nstats'])
-		except	Exception, e:
-			print 'ERROR, UNEXPECTED SAVE PLOT EXCEPTION'
-			print str(e)
-			traceback.print_exc()
+	#elif args['samp']:
+	#	print 'Sample K subgraphs of n nodes'
+	#	K = 500
+	#	n = 25
+	#	get_hrg_production_rules(df, g_name, n_subg=K, n_nodes=n)
+	#else:
+	try:
+		if os.path.exists("Results/{}_hstars.pickle".format(gname)): 
+			print "pickle_file already exists"
+			print "rerun with --nstats option"
 			os._exit(1)
+		else:
+			get_hrg_production_rules(df, gname, args['tw'], nstats=args['nstats'])
+	except	Exception, e:
+		print 'ERROR, UNEXPECTED SAVE PLOT EXCEPTION'
+		print str(e)
+		traceback.print_exc()
+		os._exit(1)
 	sys.exit(0)
