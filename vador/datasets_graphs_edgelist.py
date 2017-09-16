@@ -2,6 +2,7 @@ import os
 import dill
 import pprint as pp
 import multiprocessing as mp
+import load_edgelist	as nxg
 
 results = {}
 """
@@ -41,10 +42,10 @@ def load_edgelist(fname):
 		nx.write_gpickle(G,"datasets/{}.pickle".format(g_name))
 	return G
 
-
 def edglist_name_graph(fname):
 	print (fname)
 	return {nxg.graph_name(fname): gnx.load_edgelist(fname)}
+
 def collect_results(result):
 	#results.extend(result)
 	# https://stackoverflow.com/questions/8930915/append-dictionary-to-a-
@@ -97,7 +98,7 @@ def gen_datasets_edgelist_file():
 		for item in fileList:
 			print>>thefile, item
 	if os.path.exists(EDGELISTS):
-		print ("-- Wrote datasets edgelist file")
+		print "-- Wrote datasets edgelist file"
 
 
 EDGELISTS = "./datasets/tmp_local_datasets_edgelist.txt"
