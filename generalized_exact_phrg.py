@@ -36,7 +36,7 @@ results = []
 # ~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~#~##~#~#~#~100
 def get_parser ():
     parser = argparse.ArgumentParser(description='Infer a model given a graph (derive a model)')
-    parser.add_argument('--orig', required=True, nargs=1, help='Filename of edgelist graph')
+    parser.add_argument('-g', '--orig', required=True, nargs=1, help='Filename (full path) gpickle graph')
     parser.add_argument('--chunglu', help='Generate chunglu graphs', action='store_true')
     parser.add_argument('--kron', help='Generate Kronecker product graphs', action='store_true')
     parser.add_argument('--samp', help='Sample sg>dur>gg2targetN', action='store_true')
@@ -506,30 +506,38 @@ def compute_net_statistics_on(orig_df, gn): # gn = graph name
 #   print (gb['cc'].mean().to_string())
 #   #synth_clust_coef = results
 
-def graph_reader_main(graph_full_path):
+def load_network_dataframe(graph_full_path):
     '''
     :param graph_full_path:
     :return: either a graph or a dataframe
     '''
-    if graph_full_path.split(".")[-1] == "json":
-        print('load nlp json graph')
+    # load orig file into DF and get the dataset name into g_name
+    datframes = tdf.Pandas_DataFrame_From_Edgelist (args['orig'])
+    df = datframes[0]
+    g_name = [x for x in os.path.basename (args['orig'][0]).split ('.') if len (x) > 3][0]
+    return (df)
+
+def read_nlpgraph_json(in_file_path):
+    G = nx.read_gpickle(in_file_path)
+    print (nx.info(G))
+
+
+def main(graph_file_path):
+    '''
+
+    :param graph_file_path:
+    :return:
+    '''
+    if graph_file_path.split('.')[-1] == "gpickle":
+        read_nlpgraph_json(graph_file_path)
     else:
-        # load orig file into DF and get the dataset name into g_name
-        datframes = tdf.Pandas_DataFrame_From_Edgelist (args['orig'])
-        df = datframes[0]
-        g_name = [x for x in os.path.basename (args['orig'][0]).split ('.') if len (x) > 3][0]
-        return (df)
+        load_network_dataframe(graph_file_path)
 
 if __name__ == '__main__':
     parser = get_parser()
     args = vars(parser.parse_args())
     try:
-        if os.path.exists("Results/{}_hstars.pickle".format(gname)):
-            print "pickle_file already exists"
-            print "rerun with --nstats option"
-            sys.exit(1)
-        else:
-            get_hrg_production_rules (df, gname, args['tw'], nstats=args['nstats'])
+        main(graph_file_path=args['orig'][0])
     except Exception as e:
         print str(e)
         traceback.print_exc()
