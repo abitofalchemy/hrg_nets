@@ -61,7 +61,12 @@ class Grammar(object):
                     unary_graph.add_edge(rule.lhs, rule.cfg_rhs[0], weight=rule.prob)
         if dbg: print ("  unary_graph")
         try:
-            topological = nx.topological_sort(nx.DiGraph(unary_graph), reverse=True)
+            topological = list(reversed(list(nx.topological_sort(nx.DiGraph(unary_graph)))))
+			#reversed(list(nx.topological_sort(nx.DiGraph(unary_graph))))#, reverse=True)
+            print (topological)
+            print (len(list(topological)))
+
+            # exit()
             unary_matrix = None
         except nx.NetworkXUnfeasible:
             topological = list(g.nonterminals)
@@ -76,7 +81,7 @@ class Grammar(object):
         if dbg: print ("  topological and unary matrix")
         nt_to_index = {x: i for i, x in enumerate(topological)}
 
-        alpha = np.empty((len(topological), max_size + 1))
+        alpha = np.empty((len(list(topological)), max_size + 1))
         alpha.fill(-np.inf)
         if dbg: print ("  alpha matrix initialized and filled with -np.inf")
 

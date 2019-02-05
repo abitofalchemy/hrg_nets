@@ -15,7 +15,7 @@ __author__ = ['Salvador Aguinaga', 'Rodrigo Palacios', 'David Chaing', 'Tim Weni
 
 # salPHRG does nth inf. mirror
 
-#prod_rules = {}
+prod_rules = {}
 debug = DBG = False
 
 
@@ -268,7 +268,7 @@ def grow_graphs_using_krongen(graph, gn, recurrence_nbr=1, graph_vis_bool=False,
 
 	tsvGraphName = "/tmp/{}kpgraph.tsv".format(gn)
 	#	tmpGraphName = "/tmp/{}kpgraph.tmp".format(gn)
-	
+
 	#	if environ['HOME'] == '/home/saguinag':
 	#		args = ("time/bin/linux/krongen", "-i:{}".format(tsvGraphName),"-n0:2", "-m:\"0.9 0.6; 0.6 0.1\"", "-gi:5")
 	#	elif environ['HOME'] == '/Users/saguinag':
@@ -279,7 +279,7 @@ def grow_graphs_using_krongen(graph, gn, recurrence_nbr=1, graph_vis_bool=False,
 	kp_graphs = []
 	k = int(math.log(graph.number_of_nodes(),2))+1 # Nbr of Iterations
 	if 0: print 'k:',k,'n',graph.number_of_nodes()
-	print "  --- Model inference, kronfit learn a Kronecker seed matrix"	
+	print "  --- Model inference, kronfit learn a Kronecker seed matrix"
 	P = kronfit(graph) #[[0.9999,0.661],[0.661,		 0.01491]]
 
 	M = '-m:"{} {}; {} {}"'.format(P[0][0], P[0][1], P[1][0], P[1][1])
@@ -303,7 +303,7 @@ def grow_graphs_using_krongen(graph, gn, recurrence_nbr=1, graph_vis_bool=False,
 		for u,v in KPG.selfloop_edges():
 			KPG.remove_edge(u, v)
 		kp_graphs.append( KPG )
-		if DBG: 
+		if DBG:
 			print 'Avg Deg:', nx.average_degree_connectivity(graph)
 			import phoenix.visadjmatrix as vis
 			# vis.draw_sns_adjacency_matrix(graph)
@@ -508,7 +508,7 @@ def infinity_clustering_coefficients(g, name, nbr_of_averages=1):
 
 
 def basic_network_statistics(G, name=""):
-	import pprint 
+	import pprint
 	# print '\degree_probability_distribution','-'*40
 	# metrics.draw_degree_probability_distribution(orig_g_M=[cg], HRG_M=[], pHRG_M=[], chunglu_M=[], kron_M=[])
 	# print '\tdraw_network_value','-'*40
@@ -524,16 +524,16 @@ def basic_network_statistics(G, name=""):
 	ofname = '../Results/basic_stats_{}.log'.format(name)
 	stats = {}
 	with open(ofname, 'w') as f:
-		
-		
+
+
 		# deg dist
 		d = G.degree()
 		df = pd.DataFrame.from_dict(d.items())
 		stats['meandeg'] = df[1].mean()
 		stats['maxdeg'] = df[1].max()
 		stats['avgcc'] = nx.average_clustering(G)
- 
-	pprint.pprint(stats) 
+
+	pprint.pprint(stats)
 	return
 
 def basic_statistics_on_generated_networks(G, name="", nbr_of_averages=1):
@@ -581,34 +581,36 @@ def main():
 	if not args['graph']:
 		parser.print_help()
 		os._exit(1)
-	
+
 	try:
 		cg = nx.read_edgelist(args['graph'])
 	except Exception, e:
 		print 'ERROR, UNEXPECTED READ EXCEPTION'
 		print str(e)
-		try: 
-			g = nx.read_edgelist(args['graph'], comments="%")
+		try:
+			cg = nx.read_edgelist(args['graph'], comments="%")
 		except Exception, e:
 			print 'Error, unexpected read edgelist exception'
 			print str(e)
-			
+
 	print 'Read Edgelist File'
 	name = os.path.basename(args['graph']).rstrip('.txt')
-
-	Hstar = probabilistic_hrg(cg,1) 
-	print nx.info(Hstar)
-	# toy_graph_(cg, name, 1)
-	# infinity_degree(cg,name, nbr_of_averages=10)
-	# infinity_clustering_coefficients(cg, name, nbr_of_averages=10)
-	# basic_network_statistics(cg, name)
-	# basic_statistics_on_generated_networks(cg, name, 4)
-	# compute_infinity_mirror_graph_sets(cg, name)
-	# basic_network_statistics(cg, name)
-	# basic_statistics_on_generated_networks(cg, name, 4)
-	# basic_network_statistics(cg, name)
-	# basic_statistics_on_generated_networks(cg, name, 4)
-	# basic_statistics_on_generated_networks(cg, name, 4)
+	cg.name = name
+	# if cg is not None:
+	Hstar = probabilistic_hrg(cg,1)
+	print (type(Hstar))
+	print nx.info(Hstar[0])
+		# toy_graph_(cg, name, 1)
+		# infinity_degree(cg,name, nbr_of_averages=10)
+		# infinity_clustering_coefficients(cg, name, nbr_of_averages=10)
+		# basic_network_statistics(cg, name)
+		# basic_statistics_on_generated_networks(cg, name, 4)
+		# compute_infinity_mirror_graph_sets(cg, name)
+		# basic_network_statistics(cg, name)
+		# basic_statistics_on_generated_networks(cg, name, 4)
+		# basic_network_statistics(cg, name)
+		# basic_statistics_on_generated_networks(cg, name, 4)
+		# basic_statistics_on_generated_networks(cg, name, 4)
 
 
 if __name__ == "__main__":
